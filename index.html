@@ -387,7 +387,7 @@ body.cloud-authenticated aside,body.cloud-authenticated main,body.cloud-authenti
 <div class="card dash-card" onclick="showPage('events')"><div class="label">Event Aktif</div><div class="value" id="sEvents">0</div><div class="dash-hint">Lihat event →</div></div>
 <div class="card dash-card" onclick="showPage('orders')"><div class="label">Total Item</div><div class="value" id="sItems">0</div><div class="dash-hint">Lihat orders →</div></div>
 <div class="card dash-card" onclick="showPage('payments')"><div class="label">Uang Masuk</div><div class="value" id="sPaid">Rp0</div><div class="dash-hint">Riwayat payment →</div></div>
-<div class="card dash-card" onclick="showPage('payments')"><div class="label">Sisa Tagihan</div><div class="value" id="sDue">Rp0</div><div class="dash-hint">Belum terkumpul →</div></div>
+<div class="card dash-card" onclick="showPage('payments')"><div class="label">Belum Terkumpul</div><div class="value" id="sDue">Rp0</div><div class="dash-hint">Tagihan aktif − pembayaran →</div></div>
 <div class="card dash-card" onclick="showPage('wishlist')"><div class="label">PO Belum Dapat</div><div class="value" id="sPO">0</div><div class="dash-hint">Buka wishlist →</div></div>
 <div class="card dash-card" onclick="showPage('shipping')"><div class="label">Ready Belum Dikirim</div><div class="value" id="sReady">0</div><div class="dash-hint">Siapkan pengiriman →</div></div>
 </div><div class="grid"><div class="card"><h2 class="section-title">Order Terbaru</h2><div class="tablewrap" id="recent"></div></div><div class="card"><h2 class="section-title">Status</h2><div id="statusSummary"></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h2 class="section-title">Event</h2><div id="eventSummary"></div></div></div></section>
@@ -512,16 +512,11 @@ function renderSelects(){let eo='<option value="">Semua event</option>'+db.event
 function renderDashboard(){
  const activeEvents=db.events.filter(e=>e.status==='Aktif').length;
  const totalItems=db.orders.reduce((a,o)=>a+(+o.qty||0),0);
- const paidTotal=(typeof getPayments==='function'?getPayments():[]).reduce((a,p)=>a+(+p.amount||0),0);
+ const finance=financialSnapshot();
+ const paidTotal=finance.paid;
  const poCount=db.orders.filter(o=>o.status==='PO').reduce((a,o)=>a+(+o.qty||0),0);
  const readyCount=db.orders.filter(o=>o.status==='Ready').reduce((a,o)=>a+(+o.qty||0),0);
- let dueTotal=0;
- try{
-   const pairs=new Set(db.orders.map(o=>`${o.customerId}|${o.eventId}`));
-   pairs.forEach(k=>{const [cid,eid]=k.split('|');dueTotal+=Math.max(0,activeTotal(cid,eid)-paidFor(cid,eid));});
- }catch(e){
-   dueTotal=db.orders.reduce((a,o)=>a+Math.max(0,total(o)-(+o.paid||0)),0);
- }
+ const dueTotal=finance.due;
  document.getElementById('sEvents').textContent=activeEvents;
  document.getElementById('sItems').textContent=totalItems;
  const paidEl=document.getElementById('sPaid');if(paidEl)paidEl.textContent=rp(paidTotal);
@@ -645,12 +640,32 @@ const FINAL_BANKS = [
   {name:"JAGO",number:"105028184955",holder:"Hana Ufairah"}
 ];
 function getPayments(){try{return JSON.parse(localStorage.getItem("jastip_final_payments")||"[]")}catch(e){return []}}
-function savePayments(p){localStorage.setItem("jastip_final_payments",JSON.stringify(p));try{renderCashflow()}catch(e){}}
+function savePayments(p){
+ localStorage.setItem("jastip_final_payments",JSON.stringify(p));
+ try{renderPayments()}catch(e){}
+ try{renderDashboard()}catch(e){}
+ try{renderCashflow()}catch(e){}
+ try{renderInvoice()}catch(e){}
+ try{renderOrders()}catch(e){}
+}
 function paidFor(cid,eid){return getPayments().filter(p=>String(p.customerId)===String(cid)&&String(p.eventId)===String(eid)).reduce((a,p)=>a+(+p.amount||0),0)}
 function activeOrders(cid,eid){return db.orders.filter(o=>o.customerId==cid&&o.eventId==eid&&chargeable(o.status))}
 function pendingOrders(cid,eid){return db.orders.filter(o=>o.customerId==cid&&o.eventId==eid&&o.status==="PO")}
 function activeTotal(cid,eid){return activeOrders(cid,eid).reduce((a,o)=>a+total(o),0)+shippingFor(cid,eid)}
 function paymentState(cid,eid){let t=activeTotal(cid,eid),p=paidFor(cid,eid);if(!t)return "Belum Ditagihkan";if(p<=0)return "Belum Bayar";if(p<t)return "Sebagian";return "Lunas"}
+function financialSnapshot(){
+ const pairs={};
+ db.orders.forEach(o=>{const k=String(o.customerId)+"|"+String(o.eventId);pairs[k]=[o.customerId,o.eventId]});
+ let billing=0,paidApplied=0,due=0;
+ Object.values(pairs).forEach(([cid,eid])=>{
+   const t=activeTotal(cid,eid), p=paidFor(cid,eid);
+   billing+=t;
+   paidApplied+=Math.min(Math.max(0,p),Math.max(0,t));
+   due+=Math.max(0,t-p);
+ });
+ const paidRaw=getPayments().reduce((a,p)=>a+(+p.amount||0),0);
+ return {billing,paid:paidRaw,paidApplied,due};
+}
 function finalRenderPaymentSelects(){
   if(!document.getElementById("payCustomer"))return;
   payCustomer.innerHTML=db.customers.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','id',{sensitivity:'base'})).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
@@ -1152,10 +1167,11 @@ function cashflowEventData(eid){
   const po=orders.filter(o=>o.status==='PO');
   const goods=billed.reduce((a,o)=>a+((+o.price||0)*(+o.qty||1)),0);
   const fee=billed.reduce((a,o)=>a+(+o.fee||0),0);
-  const shipping=(db.shipments||[]).filter(x=>String(x.eventId)===String(eid)&&x.status!=='Cancelled').reduce((a,x)=>a+(+x.cost||0),0);
+  const shipping=(db.shipments||[]).filter(x=>String(x.eventId)===String(eid)&&!['Cancelled','Estimasi Ongkir'].includes(x.status)).reduce((a,x)=>a+(+x.cost||0),0);
   const billing=goods+fee+shipping;
   const paid=getPayments().filter(p=>String(p.eventId)===String(eid)).reduce((a,p)=>a+(+p.amount||0),0);
-  const due=Math.max(0,billing-paid);
+  const customerIds=[...new Set(orders.map(o=>o.customerId))];
+  const due=customerIds.reduce((a,cid)=>a+Math.max(0,activeTotal(cid,eid)-paidFor(cid,eid)),0);
   const poValue=po.reduce((a,o)=>a+((+o.price||0)*(+o.qty||1)+(+o.fee||0)),0);
   return {goods,fee,shipping,billing,paid,due,poValue,billedCount:billed.reduce((a,o)=>a+(+o.qty||1),0),poCount:po.reduce((a,o)=>a+(+o.qty||1),0)};
 }
@@ -1274,7 +1290,7 @@ async function downloadCloudToLocal(){
  if(!confirm('Cloud berisi '+counts+'.\n\nAmbil Cloud akan mengganti data lokal di device ini. Sebaiknya Download Backup dulu. Lanjutkan?'))return;
  if(p.db){db=p.db;if(!Array.isArray(db.shipments))db.shipments=[];localStorage.setItem(KEY,JSON.stringify(db));}
  if(Array.isArray(p.payments))localStorage.setItem('jastip_final_payments',JSON.stringify(p.payments));
- try{renderAll()}catch(e){} try{renderPayments()}catch(e){} try{renderInvoice()}catch(e){} try{renderCashflow()}catch(e){}
+ try{renderAll()}catch(e){} try{renderPayments()}catch(e){} try{renderDashboard()}catch(e){} try{renderInvoice()}catch(e){} try{renderCashflow()}catch(e){}
  let note=document.getElementById('cloudSyncNote');if(note)note.textContent='Cloud dimuat '+new Date().toLocaleString('id-ID');
  alert('Data cloud berhasil dimuat ke device ini.');
 }
