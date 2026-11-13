@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rekapan Pesanan | Jastip Manager</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+ :root{--bg:#fff8f6;--card:#fffdfb;--ink:#3b2d32;--muted:#8b777d;--accent:#b65f7b;--accent-soft:#fce8ef;--line:#f2dfe5;--green:#e7f6ed;--red:#fde9eb;--yellow:#fff4d9;--blue:#eaf1ff;--shadow:0 10px 28px rgba(151,86,109,.09)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top right,rgba(249,211,225,.62),transparent 330px),linear-gradient(180deg,#fff0f4 0,#fff8f6 250px,var(--bg) 250px);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{width:min(100%,700px);margin:0 auto;padding:24px 16px 36px}.brand{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:1.8px;font-weight:900;color:var(--accent);background:rgba(255,255,255,.72);border:1px solid rgba(182,95,123,.14);padding:8px 11px;border-radius:999px}h1{font-size:clamp(24px,6vw,30px);letter-spacing:-.7px;line-height:1.15;margin:15px 0 7px}.sub{color:var(--muted);font-size:13px;line-height:1.55;margin:0}.card{background:var(--card);border:1px solid rgba(182,95,123,.14);border-radius:22px;padding:18px;margin-top:18px;box-shadow:var(--shadow)}.event{display:inline-block;font-size:12px;color:var(--accent);background:var(--accent-soft);padding:7px 10px;border-radius:9px}.greeting{font-size:20px;line-height:1.25;letter-spacing:-.3px;margin:14px 0 5px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 20px}.summary-box{padding:13px;border:1px solid var(--line);border-radius:15px;background:#fffdfa;min-width:0}.summary-box.total{grid-column:1/-1;background:linear-gradient(135deg,#c46e8c,#a84e70);color:white;border:0;padding:16px}.sum-label{font-size:11px;line-height:1.35;color:var(--muted);margin-bottom:6px}.total .sum-label{color:#ffeaf1}.sum-value{font-size:17px;font-weight:850;letter-spacing:-.3px;overflow-wrap:anywhere}.total .sum-value{font-size:28px}.sum-sub{font-size:11px;line-height:1.45;color:#ffeaf1;margin-top:6px}.section-label{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:850;margin:22px 0 3px}.item{padding:15px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0;padding-bottom:2px}.itemhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.itemname{font-weight:800;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.itemprice{font-weight:850;font-size:13px;color:var(--accent);text-align:right;white-space:nowrap}.meta{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}.itembottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.subtotal{font-size:12px;color:var(--muted);text-align:right}.subtotal b{display:block;color:var(--ink);font-size:13px;margin-top:2px}.pill{display:inline-block;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:800;line-height:1.35;max-width:100%}.good{background:var(--green);color:#277146}.wait{background:var(--yellow);color:#8b6815}.bad{background:var(--red);color:#9a4139}.ship{background:var(--blue);color:#3f6194}.error{padding:18px;background:#fff;border-radius:14px;color:#8a3d37;line-height:1.5}.foot{margin-top:18px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6;padding:0 8px}.hist{margin-top:22px;border-top:1px dashed var(--line);padding-top:12px}.hist summary{cursor:pointer;font-size:12px;font-weight:850;color:var(--muted);letter-spacing:.3px}.note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}
+@media(min-width:560px){.wrap{padding-top:32px}.card{padding:24px}.summary{grid-template-columns:1fr 1fr}.total .sum-value{font-size:32px}}
+@media(max-width:380px){.wrap{padding:18px 12px 28px}.card{padding:14px;border-radius:18px}.itemhead{gap:8px}.itemprice{font-size:12px}.sum-value{font-size:15px}.total .sum-value{font-size:26px}}
+
+.summary{gap:8px;margin:12px 0 10px}.summary-box{padding:10px 12px}.summary-box.total{padding:13px 14px}.total .sum-value{font-size:26px}.sum-value{font-size:16px}
+.rinci{margin:0 0 6px;border:1px solid var(--line);border-radius:14px;padding:0 12px;background:#fffdfa}.rinci summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--accent);padding:10px 0;list-style:none}.rinci summary::-webkit-details-marker{display:none}.rinci summary::after{content:' ▾'}.rinci[open] summary::after{content:' ▴'}
+.rrow{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:6px 0;border-top:1px dashed var(--line)}.rrow span{color:var(--muted)}.sum-note{font-size:11px;color:var(--muted);padding:2px 0 10px;line-height:1.45}
+.section-label{margin:16px 0 4px;font-size:11px}.section-label .cnt{font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted);margin-left:4px}
+.it{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}.it:last-child{border-bottom:0}
+.it-img{width:44px;height:44px;object-fit:cover;border-radius:10px;flex:none}.it-main{flex:1;min-width:0}.it-name{font-weight:800;font-size:13.5px;line-height:1.35;overflow-wrap:anywhere}.it-meta{font-size:11.5px;color:var(--muted);margin:2px 0 5px;line-height:1.4}
+.it-price{text-align:right;flex:none;max-width:42%}.it-price b{display:block;font-size:13.5px;color:var(--accent);white-space:nowrap}.it-price small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.pill{padding:3px 8px;font-size:10.5px}
+.hist{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:0 12px;background:#fffaf8}.hist>summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--muted);padding:12px 0;list-style:none}.hist>summary::-webkit-details-marker{display:none}.hist>summary::before{content:'▸ '}.hist[open]>summary::before{content:'▾ '}
+.hist .it{opacity:.85}
+.note{font-size:11px;color:var(--muted);line-height:1.5;margin:14px 0 0}
+
+.ev{margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:0 12px;background:#fffdfa}.ev>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0}.ev>summary::-webkit-details-marker{display:none}
+.ev-name{font-weight:850;font-size:14.5px;line-height:1.3;overflow-wrap:anywhere}.ev-meta{font-size:11.5px;color:var(--muted);margin-top:2px}.ev .pill{flex:none}
+.ev-sum{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);padding:2px 0 8px;border-top:1px dashed var(--line);padding-top:8px}.ev-sum b{color:var(--ink)}
+.hist.inner{margin:6px 0 12px}
+</style></head><body><main class="wrap"><div class="brand">JASTIP MANAGER</div><h1>Rekapan Pesanan</h1><div class="sub">Link pribadi ini menampilkan pesanan kamu dari beberapa event sekaligus.</div><div id="content" class="card">Memuat rekapan…</div><div class="foot">Jika status belum berubah, muat ulang halaman ini untuk melihat data terbaru.</div></main><script>
+const SUPABASE_URL='https://aewcrqgknlntmacrlvhd.supabase.co';const KEY='sb_publishable_30ODyszcxUi54JJyYByfdQ_q_RCEysm';
+const statusLabel={'Request':'Menunggu konfirmasi / masih dicari','PO':'Menunggu konfirmasi / masih dicari','Dapat':'Berhasil didapat','Tidak Dapat':'Tidak berhasil didapat / sold out','OTW ke Aku':'Dalam perjalanan ke jastiper','Ready':'Barang sudah sampai di jastiper','Sent':'Sudah dikirim','Completed':'Selesai','Cancelled':'Dibatalkan'};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rp=n=>'Rp'+Math.round(Number(n)||0).toLocaleString('id-ID');
+function cls(s){if(['Dapat','Ready','Completed'].includes(s))return'good';if(['Tidak Dapat','Cancelled'].includes(s))return'bad';if(['OTW ke Aku','Sent'].includes(s))return'ship';return'wait'}
+function renderRecap(data){
+ const host=document.getElementById('content');
+ const groups=Array.isArray(data.events)&&data.events.length?data.events:[{event_name:data.event_name||'PO',orders:data.orders||[]}];
+ const HIST=['Sent','Completed','Cancelled','Tidak Dapat','Sold'],DROP=['Cancelled','Tidak Dapat','Sold'];
+ const shortLabel={'Request':'Menunggu','PO':'Menunggu','Dapat':'Dapat ✓','Tidak Dapat':'Tidak dapat','OTW ke Aku':'Dalam perjalanan','Ready':'Sudah di jastiper','Sent':'Dikirim','Completed':'Selesai','Cancelled':'Batal','Sold':'Habis'};
+ const hasPer=groups.length>0&&groups.every(g=>g.paid!==undefined&&g.paid!==null);
+ const N=v=>Math.max(0,Number(v)||0);
+ // hitung per event
+ const E=groups.map(g=>{
+  const os=g.orders||[],counted=os.filter(o=>!DROP.includes(o.status));
+  const goods=counted.reduce((a,o)=>a+(Number(o.price)>0?N(o.price)*Math.max(1,Number(o.qty)||1):0),0);
+  const fees=counted.reduce((a,o)=>a+N(o.fee),0);
+  const paid=hasPer?N(g.paid):os.reduce((a,o)=>a+N(o.paid),0);
+  const ship=hasPer?N(g.ship):os.reduce((a,o)=>a+N(o.ship),0);
+  const est=hasPer?N(g.ship_est):0;
+  const total=goods+fees+ship+est,bal=Math.max(0,total-paid);
+  const missing=counted.some(o=>!(Number(o.price)>0));
+  const act=os.filter(o=>!HIST.includes(o.status)),his=os.filter(o=>HIST.includes(o.status));
+  const done=!act.length&&bal<=0&&ship+est>=0;
+  return {g,os,act,his,goods,fees,paid,ship,est,total,bal,missing,hidden:!!g.hidden,done,date:g.event_date||''};
+ });
+ const byDate=(a,b)=>(a.date||'9999').localeCompare(b.date||'9999');
+ const shown=E.filter(e=>!e.hidden),later=E.filter(e=>e.hidden).sort(byDate);
+ const nowList=shown.filter(e=>!e.done).sort(byDate),doneList=shown.filter(e=>e.done).sort(byDate);
+ // ringkasan: hanya event yang tampil (non-hidden); kalau payload lama, semua
+ let goods,fees,paid,shipping,est,allShippingKnown=true;
+ const base=hasPer?shown:E;
+ if(hasPer){goods=base.reduce((a,e)=>a+e.goods,0);fees=base.reduce((a,e)=>a+e.fees,0);paid=base.reduce((a,e)=>a+e.paid,0);shipping=base.reduce((a,e)=>a+e.ship,0);est=base.reduce((a,e)=>a+e.est,0)}
+ else{goods=E.reduce((a,e)=>a+e.goods,0);fees=E.reduce((a,e)=>a+e.fees,0);paid=N(data.paid_total??data.total_paid??E.reduce((a,e)=>a+e.paid,0));
+  const sk=data.shipping_total!==undefined&&data.shipping_total!==null;shipping=sk?N(data.shipping_total):E.reduce((a,e)=>a+e.ship,0);
+  allShippingKnown=sk||E.every(e=>e.os.every(o=>o.ship!==undefined&&o.ship!==null));est=N(data.shipping_estimate)}
+ const total=goods+fees+(allShippingKnown?shipping:0)+est,balance=Math.max(0,total-paid);
+ const missingPrice=base.some(e=>e.missing);
+ const finalKnown=data.total_final!==undefined&&data.total_final!==null?Boolean(data.total_is_final!==false):Boolean(data.total_is_final);
+ const isFinal=(hasPer?est<=0&&true:finalKnown)&&!missingPrice;
+ const laterBal=later.reduce((a,e)=>a+e.bal,0);
+ const summary='<div class="summary">'+
+   '<div class="summary-box total"><div class="sum-label">'+(hasPer&&later.length?'Sisa yang perlu dibayar sekarang':(isFinal?(balance>0?'Sisa yang perlu dibayar':'Status pembayaran'):'Sisa sementara · belum final'))+'</div><div class="sum-value">'+(isFinal&&balance<=0?'Lunas ✓':rp(balance))+'</div>'+(isFinal?'':'<div class="sum-sub">'+(est>0?'Sudah termasuk estimasi ongkir. ':'')+(missingPrice?'Masih ada harga yang belum lengkap, jadi angka ini bisa berubah.':'Jika ada penyesuaian biaya, akan diinfokan kembali.')+'</div>')+(later.length?'<div class="sum-sub">'+later.length+' event lain (PO masih berjalan) belum dihitung di sini.</div>':'')+'</div>'+
+   '<div class="summary-box"><div class="sum-label">Total tagihan</div><div class="sum-value">'+rp(total)+'</div></div>'+
+   '<div class="summary-box"><div class="sum-label">Sudah dibayar / DP</div><div class="sum-value">'+rp(paid)+'</div></div></div>'+
+   '<details class="rinci"><summary>Lihat rincian tagihan</summary>'+
+   '<div class="rrow"><span>Total barang + fee</span><b>'+rp(goods+fees)+'</b></div>'+
+   '<div class="rrow"><span>Ongkir</span><b>'+(allShippingKnown?rp(shipping):'Belum diketahui')+'</b></div>'+
+   (est>0?'<div class="rrow"><span>Estimasi ongkir (sudah termasuk di total)</span><b>'+rp(est)+'</b></div><div class="sum-note">Ongkir masih estimasi. Jika ada penyesuaian biaya, akan diinfokan kembali.</div>':'')+
+   '</details>';
+ const itemRow=o=>{
+  const qty=Math.max(1,Number(o.qty)||1),price=N(o.price),fee=N(o.fee),has=price>0;
+  const title=[o.brand,o.item].filter(Boolean).join(' · ')||'Item pesanan';
+  const meta=[o.size?esc(o.size):'',o.colour?esc(o.colour):'','×'+qty].filter(Boolean).join(' · ');
+  const ph=o.photo?'<img class="it-img" src="'+SUPABASE_URL+'/storage/v1/object/public/item-photos/'+encodeURI(o.photo)+'" alt="" loading="lazy">':'';
+  const lineTotal=has?rp(price*qty+fee):'Belum ada harga';
+  const sub=has?(fee?rp(price*qty)+' + fee '+rp(fee):rp(price*qty)):'';
+  return '<div class="it">'+ph+'<div class="it-main"><div class="it-name">'+esc(title)+'</div><div class="it-meta">'+meta+(o.bundle?' · 📦 '+esc(o.bundle):'')+'</div><span class="pill '+cls(o.status)+'">'+esc(shortLabel[o.status]||o.status||'Status belum tersedia')+'</span></div><div class="it-price"><b>'+lineTotal+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div></div>';
+ };
+ const fmtDate=d=>{if(!d)return'';const x=new Date(d+'T00:00:00');return isNaN(x)?'':x.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})};
+ const card=(e,open,provisional)=>{
+  const nm=esc(e.g.event_name||e.g.name||'Event'),dt=fmtDate(e.date);
+  const badge=e.bal>0?'<span class="pill wait">'+(provisional?'Tagihan sementara ':'Sisa ')+rp(e.bal)+'</span>':'<span class="pill good">Lunas ✓</span>';
+  const evSum=hasPer?'<div class="ev-sum"><span>Barang + fee <b>'+rp(e.goods+e.fees)+'</b></span>'+((e.ship+e.est)>0?'<span>Ongkir'+(e.est>0&&!e.ship?' (estimasi)':'')+' <b>'+rp(e.ship+e.est)+'</b></span>':'')+(e.paid>0?'<span>Dibayar <b>'+rp(e.paid)+'</b></span>':'')+'</div>':'';
+  const hist=e.his.length?'<details class="hist inner"><summary>Riwayat event ini · '+e.his.length+' barang</summary>'+e.his.map(itemRow).join('')+'</details>':'';
+  return '<details class="ev"'+(open?' open':'')+'><summary><div class="ev-h"><div class="ev-name">'+nm+'</div><div class="ev-meta">'+(dt?dt+' · ':'')+e.os.length+' barang</div></div>'+badge+'</summary>'+evSum+(e.act.length?e.act.map(itemRow).join(''):'<div class="sub" style="padding:10px 0">Semua barang di event ini sudah selesai.</div>')+hist+'</details>';
+ };
+ let html='';
+ if(nowList.length){html+='<div class="section-label">Event yang perlu diperhatikan</div>'+nowList.map((e,i)=>card(e,true,false)).join('')}
+ else if(!later.length&&!doneList.length)html+='<div class="sub" style="padding:14px 0">Belum ada pesanan. 🎉</div>';
+ else if(!nowList.length)html+='<div class="sub" style="padding:14px 0">Tidak ada tagihan yang perlu dibayar sekarang. 🎉</div>';
+ if(later.length)html+='<div class="section-label">PO masih berjalan <span class="cnt">· belum perlu dibayar dulu</span></div><div class="sum-note">Event di bawah ini masih proses PO yang lama. Tagihannya bersifat sementara dan akan diinfokan saat sudah mendekati waktunya.'+(laterBal>0?' Perkiraan: <b>'+rp(laterBal)+'</b>.':'')+'</div>'+later.map(e=>card(e,false,true)).join('');
+ if(doneList.length)html+='<div class="section-label">Event selesai</div>'+doneList.map(e=>card(e,false,false)).join('');
+ host.innerHTML='<h2 class="greeting">Halo, '+esc(data.customer_name||'Customer')+'!</h2><p class="sub">Ringkasan pesanan kamu dari '+groups.length+' event.</p>'+summary+html+'<p class="note">'+(isFinal?'Total mengikuti data tagihan saat ini.':'Perhitungan ini belum final dan dapat berubah saat harga atau ongkir dilengkapi.')+' Total tidak memasukkan barang yang batal atau tidak berhasil didapat. Untuk koreksi pesanan atau pembayaran, hubungi admin.</p>';
+}
+(async()=>{const host=document.getElementById('content');const t=new URLSearchParams(location.search).get('t');if(!t){host.innerHTML='<div class="error">Link rekapan tidak lengkap. Minta link terbaru kepada admin jastip.</div>';return}try{const client=window.supabase.createClient(SUPABASE_URL,KEY);const {data,error}=await client.rpc('get_customer_event_share',{p_token:t});if(error)throw error;if(!data||data.error||(!Array.isArray(data.orders)&&!Array.isArray(data.events))){host.innerHTML='<div class="error">Link tidak valid, sudah dicabut, atau belum tersedia. Minta admin jastip membuat link baru.</div>';return}renderRecap(data)}catch(e){console.error(e);host.innerHTML='<div class="error">Rekapan belum bisa dimuat. Pastikan admin sudah mengaktifkan fitur link rekapan. Jika masalah berlanjut, minta link baru.</div>'}})();
+</script></body></html>
